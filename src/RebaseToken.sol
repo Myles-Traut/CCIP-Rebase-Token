@@ -38,10 +38,13 @@ contract RebaseToken is ERC20, Ownable2Step, AccessControl {
     //---- STATE CHANGING -----//
     //-------------------------//
 
+    // @notice Grant the mint and burn role to an account
     function grantMintAndBurnRole(address _account) external onlyOwner {
         _grantRole(MINT_AND_BURN_ROLE, _account);
     }
 
+    // @notice Set the Global interest rate
+    // @dev Only the owner can set the interest rate
     function setInterestRate(uint256 _newInterestRate) external onlyOwner {
         if (_newInterestRate < s_interestRate) {
             revert RebaseToken__InterestRateCanOnlyDecrease(s_interestRate, _newInterestRate);
@@ -50,12 +53,16 @@ contract RebaseToken is ERC20, Ownable2Step, AccessControl {
         emit InterestRateUpdated(_newInterestRate);
     }
 
+    // @notice Mint tokens to an account including any accrued interest
+    // @dev Only the mint and burn role can mint tokens
     function mint(address _to, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE) {
         _mintAccruedInterest(_to);
         s_userInterestRate[_to] = s_interestRate;
         _mint(_to, _amount);
     }
 
+    // @notice Burn tokens from an account minting any accrued interest beforehand
+    // @dev Only the mint and burn role can burn tokens
     function burn(address _from, uint256 _amount) external onlyRole(MINT_AND_BURN_ROLE) {
         // mitigate dust if user burns all their tokens
         if (_amount == type(uint256).max) {
