@@ -46,7 +46,7 @@ contract RebaseToken is ERC20, Ownable2Step, AccessControl {
     // @notice Set the Global interest rate
     // @dev Only the owner can set the interest rate
     function setInterestRate(uint256 _newInterestRate) external onlyOwner {
-        if (_newInterestRate < s_interestRate) {
+        if (_newInterestRate >= s_interestRate) {
             revert RebaseToken__InterestRateCanOnlyDecrease(s_interestRate, _newInterestRate);
         }
         s_interestRate = _newInterestRate;
@@ -149,7 +149,7 @@ contract RebaseToken is ERC20, Ownable2Step, AccessControl {
      * @param _user The address of the user
      * @return uint256 The principal balance of the user
      */
-    function getPrincipalBalance(address _user) external view returns (uint256) {
+    function getPrincipalBalanceOf(address _user) external view returns (uint256) {
         return super.balanceOf(_user);
     }
 
