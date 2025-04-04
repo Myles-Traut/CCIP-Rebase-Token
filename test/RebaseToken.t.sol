@@ -179,11 +179,15 @@ contract RebaseTokenTest is Test {
         uint256 userInterestRate = rebaseToken.getUserInterestRate(user);
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, user, MINT_AND_BURN_ROLE));
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, user, MINT_AND_BURN_ROLE)
+        );
         rebaseToken.mint(user, 1e18, userInterestRate);
 
         vm.prank(user);
-        vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, user, MINT_AND_BURN_ROLE));
+        vm.expectRevert(
+            abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, user, MINT_AND_BURN_ROLE)
+        );
         rebaseToken.burn(user, 1e18);
     }
 
@@ -200,7 +204,7 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.getPrincipalBalanceOf(user), _amount);
 
         vm.warp(block.timestamp + 1 hours);
-        assertEq(rebaseToken.getPrincipalBalanceOf(user), _amount);    
+        assertEq(rebaseToken.getPrincipalBalanceOf(user), _amount);
     }
 
     function testGetRebaseTokenAddress() public view {
@@ -212,11 +216,11 @@ contract RebaseTokenTest is Test {
         _newInterestRate = bound(_newInterestRate, initialInterestRate, type(uint96).max);
 
         vm.prank(owner);
-        vm.expectRevert(abi.encodeWithSelector(
-            RebaseToken.RebaseToken__InterestRateCanOnlyDecrease.selector,
-            initialInterestRate,
-            _newInterestRate
-        ));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                RebaseToken.RebaseToken__InterestRateCanOnlyDecrease.selector, initialInterestRate, _newInterestRate
+            )
+        );
         rebaseToken.setInterestRate(_newInterestRate);
 
         assertEq(rebaseToken.getInterestRate(), initialInterestRate);
