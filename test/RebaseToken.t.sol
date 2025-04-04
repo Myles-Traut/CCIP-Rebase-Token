@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {RebaseToken} from "../src/RebaseToken.sol";
 import {Vault} from "../src/Vault.sol";
 import {IRebaseToken} from "../src/interfaces/IRebaseToken.sol";
@@ -31,7 +31,7 @@ contract RebaseTokenTest is Test {
         require(success, "Failed to send ETH to vault");
     }
 
-    function test_Deposit_Linear_Interest(uint256 _amount) public {
+    function testDepositLinearInterest(uint256 _amount) public {
         _amount = bound(_amount, 1e5, type(uint96).max);
         deal(user, _amount);
 
@@ -54,7 +54,7 @@ contract RebaseTokenTest is Test {
         assertApproxEqAbs(endingBalance - middleBalance, middleBalance - startingBalance, 1);
     }
 
-    function test_Redeem_Straight_Away(uint256 _amount) public {
+    function testRedeemStraightAway(uint256 _amount) public {
         _amount = bound(_amount, 1e5, type(uint96).max);
         deal(user, _amount);
 
@@ -69,7 +69,7 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.balanceOf(user), 0);
     }
 
-    function test_Redeem_After_Time(uint256 _depositAmount, uint256 _time) public {
+    function testRedeemAfterTime(uint256 _depositAmount, uint256 _time) public {
         _time = bound(_time, 1000, type(uint96).max);
         _depositAmount = bound(_depositAmount, 1e5, type(uint96).max);
 
@@ -93,7 +93,7 @@ contract RebaseTokenTest is Test {
         assertGt(ethBalance, _depositAmount);
     }
 
-    function test_Transfer(uint256 _amount, uint256 _amountToSend) public {
+    function testTransfer(uint256 _amount, uint256 _amountToSend) public {
         _amount = bound(_amount, 1e5 + 1e5, type(uint96).max);
         _amountToSend = bound(_amountToSend, 1e5, _amount - 1e5);
 
@@ -128,7 +128,7 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.getUserInterestRate(user2), 5e10);
     }
 
-    function test_TransferFrom(uint256 _amount, uint256 _amountToSend) public {
+    function testTransferFrom(uint256 _amount, uint256 _amountToSend) public {
         _amount = bound(_amount, 1e5 + 1e5, type(uint96).max);
         _amountToSend = bound(_amountToSend, 1e5, _amount - 1e5);
 
@@ -167,25 +167,27 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.getUserInterestRate(user3), 5e10);
     }
 
-    function test_Cannot_Call_SetInterestRate(uint256 _newInterestRate) public {
+    function testCannotCallSetInterestRate(uint256 _newInterestRate) public {
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
         rebaseToken.setInterestRate(_newInterestRate);
     }
 
-    function test_Cannot_Call_Mint_And_Burn() public {
+    function testCannotCallMintAndBurn() public {
         bytes32 MINT_AND_BURN_ROLE = keccak256("MINT_AND_BURN_ROLE");
+
+        uint256 userInterestRate = rebaseToken.getUserInterestRate(user);
 
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, user, MINT_AND_BURN_ROLE));
-        rebaseToken.mint(user, 1e18);
+        rebaseToken.mint(user, 1e18, userInterestRate);
 
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(IAccessControl.AccessControlUnauthorizedAccount.selector, user, MINT_AND_BURN_ROLE));
         rebaseToken.burn(user, 1e18);
     }
 
-    function test_Get_Principal_BalanceOf(uint256 _amount) public {
+    function testGetPrincipalBalanceOf(uint256 _amount) public {
         _amount = bound(_amount, 1e5, type(uint96).max);
 
         deal(user, _amount);
@@ -201,11 +203,11 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.getPrincipalBalanceOf(user), _amount);    
     }
 
-    function test_Get_RebaseToken_Address() public view {
+    function testGetRebaseTokenAddress() public view {
         assertEq(vault.rebaseTokenAddress(), address(rebaseToken));
     }
 
-    function test_Interest_Rate_Can_Only_Decrease(uint256 _newInterestRate) public {
+    function testInterestRateCanOnlyDecrease(uint256 _newInterestRate) public {
         uint256 initialInterestRate = rebaseToken.getInterestRate();
         _newInterestRate = bound(_newInterestRate, initialInterestRate, type(uint96).max);
 
@@ -220,14 +222,14 @@ contract RebaseTokenTest is Test {
         assertEq(rebaseToken.getInterestRate(), initialInterestRate);
     }
 
-    function test_SetInterestRate_Emits_Event() public {
+    function testSetInterestRateEmitsEvent() public {
         vm.prank(owner);
         vm.expectEmit(true, true, true, true);
         emit RebaseToken.InterestRateUpdated(1e10);
         rebaseToken.setInterestRate(1e10);
     }
 
-    function test_Cannot_Grant_Role() public {
+    function testCannotGrantRole() public {
         vm.prank(user);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, user));
         rebaseToken.grantMintAndBurnRole(user);
