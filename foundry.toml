@@ -5,7 +5,18 @@ libs = ["lib"]
 
 remappings = [
     '@openzeppelin/=lib/openzeppelin-contracts',
-    '@ccip/=lib/ccip/'
+    '@ccip/=lib/ccip/',
+    '@ccip-local/=lib/chainlink-local'
 ]
+
+[rpc_endpoints]
+sepolia = "${SEPOLIA_RPC_URL}"
+mainnet = "${MAINNET_RPC_URL}"
+arb_sepolia = "${ARB_SEPOLIA_RPC_URL}"
+
+[etherscan]
+sepolia = {key = "${SEPOLIA_ETHERSCAN_API_KEY}" }
+mainnet = {key = "${MAINNET_ETHERSCAN_API_KEY}" }
+arb_sepolia = {key = "${ARB_SEPOLIA_ETHERSCAN_API_KEY}"}
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
